@@ -26,16 +26,26 @@ function init(){
 
   wss.on('connection', function(ws) {
     console.log("new ws connected client: ", ws);
+
+    // store the connected client in an array
     connections.push(ws);
+
+    connections.forEach(function(ws){
+      ws.send("There are " + connections.length + " clients connected", function() { /* ignore errors */ });
+    });
 
     ws.on('message', function(message) {
         console.log('received: %s', message);
     });
 
+
     ws.on('close', function() {
       var idx = connections.indexOf(ws);
       console.log('client hang up, ' + idx+1 + " of " + connections.length);
       connections.splice(idx, 1);
+      connections.forEach(function(ws){
+        ws.send("There are now " + connections.length + " clients connected", function() { /* ignore errors */ });
+      });
       console.log(connections.length + " remain");
       ws = null;
     });
