@@ -1,5 +1,6 @@
 var http = require('http'), 
     fs = require('fs');
+    os = require('os'),
     WebSocketServer = require('ws').Server;
 
 var resources = {
@@ -52,6 +53,17 @@ function init(){
   });
 
   console.log("WebSocket server listening for ws connections on port 8080");
+
+  // broadcast memory usage data every 1/2 second
+  var itv = setInterval(function() {
+    var data = process.memoryUsage(); 
+    data.freemem = os.freemem();
+    var payload = JSON.stringify(data);
+    // send it to all connected clients
+    connections.forEach(function(ws){
+      ws.send(payload, function() { /* ignore errors */ });
+    });
+  }, 500);
 
 }
 
