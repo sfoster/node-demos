@@ -1,0 +1,5 @@
+## NPM packages ##
+#  For the purposes of this demo, we'll not add packages to the repo
+#  so we can show module-missing errors and step through module installation.
+
+node_modules

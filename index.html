@@ -30,5 +30,25 @@
     </tbody>
   </table>
 
+  <script>
+  console.log("opening websocket connection to: " + 'ws://'+ location.hostname +':8080');
+  var ws = new WebSocket('ws://localhost:8080');
+  // var ws = new WebSocket('ws://'+ location.hostname +':8080');
+  ws.onmessage = function(evt){
+    console.log("Web socket message: ", evt.data, evt);
+  };
+  ws.onopen = function(){
+    // Web Socket is connected, send data using send()
+    ws.send(JSON.stringify({
+      msg: navigator.userAgent
+    }));
+  };
+  
+  function hangup(){
+    ws.onclose = function () {}; // disable onclose handler first
+    ws.close();
+  }
+  window.onbeforeunload = hangup;
+  </script>
 </body>
 </html>
