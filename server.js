@@ -1,5 +1,5 @@
 var http = require('http'), 
-    fs = require('fs');
+    fs = require('fs'),
     os = require('os'),
     WebSocketServer = require('ws').Server;
 
@@ -31,8 +31,12 @@ function init(){
     // store the connected client in an array
     connections.push(ws);
 
+    var payload = JSON.stringify({
+      message: "There are now " + connections.length + " clients connected"
+    });
+
     connections.forEach(function(ws){
-      ws.send("There are " + connections.length + " clients connected", function() { /* ignore errors */ });
+      ws.send(payload, function() { /* ignore errors */ });
     });
 
     ws.on('message', function(message) {
@@ -44,8 +48,11 @@ function init(){
       var idx = connections.indexOf(ws);
       console.log('client hang up, ' + idx+1 + " of " + connections.length);
       connections.splice(idx, 1);
+      var payload = JSON.stringify({
+        message: "There are now " + connections.length + " clients connected"
+      });
       connections.forEach(function(ws){
-        ws.send("There are now " + connections.length + " clients connected", function() { /* ignore errors */ });
+        ws.send(payload, function() { /* ignore errors */ });
       });
       console.log(connections.length + " remain");
       ws = null;
@@ -58,7 +65,7 @@ function init(){
   var itv = setInterval(function() {
     var data = process.memoryUsage(); 
     data.freemem = os.freemem();
-    var payload = JSON.stringify(data);
+    var payload = JSON.stringify({ usage: data });
     // send it to all connected clients
     connections.forEach(function(ws){
       ws.send(payload, function() { /* ignore errors */ });

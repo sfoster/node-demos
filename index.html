@@ -31,11 +31,71 @@
   </table>
 
   <script>
+  var values = [],
+      maxValues = 10;
+      
+  function bytesToMB(val){
+    var MB = 1024 * 1024;
+    val *= 100;
+    return Math.round( val / MB ) / 100;
+  }
+
+  function onUsageData(data){
+    var unit = 1, cols = [];
+    
+    ['rss', 'heapTotal', 'heapUsed'].forEach(function(key){
+      cols.push({ label: key, rawValue: data[key], value: bytesToMB(data[key]) });
+    })
+
+    values.push({
+      max: data.freemem,
+      cols: cols
+    });
+    
+    if(values.length > maxValues){
+      // truncate the array by ditching old values 
+      values.splice(0, values.length-maxValues);
+    }
+    render(values);
+  }
+  
+  function render(values){
+    var tbody = document.getElementById('output');
+    while(tbody.firstChild){
+      tbody.removeChild(tbody.firstChild);
+    }
+
+    values.forEach(function(data){
+      var tr = tbody.insertRow(0);
+      data.cols.forEach(function(col, idx){
+        var td = tr.insertCell(idx);
+        td.setAttribute('data-rawValue', col.rawValue);
+        td.innerHTML = col.value;
+      });
+    });
+  }
+  
+
   console.log("opening websocket connection to: " + 'ws://'+ location.hostname +':8080');
-  var ws = new WebSocket('ws://localhost:8080');
-  // var ws = new WebSocket('ws://'+ location.hostname +':8080');
+  var ws = new WebSocket('ws://'+ location.hostname +':8080');
+
   ws.onmessage = function(evt){
-    console.log("Web socket message: ", evt.data, evt);
+    var data;
+    try {
+      data = JSON.parse(evt.data);
+    } catch(e){
+      console.log("Error parsing: ", evt.data)
+      console.error(e);
+      return;
+    }
+    if(data.message){
+      console.log("ws message: ", data.message);
+      return;
+    }
+    if(data.usage){
+      onUsageData(data.usage);
+      return;
+    }
   };
   ws.onopen = function(){
     // Web Socket is connected, send data using send()
