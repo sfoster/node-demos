@@ -23,7 +23,7 @@ function init(){
   server.listen(8888);
   console.log("HTTP server listening for http connections on port 8888");
 
-  var wss = new WebSocketServer({port: 8080});
+  var wss = new WebSocketServer({port: 8080, host: null });
 
   wss.on('connection', function(ws) {
     console.log("new ws connected client: ", ws);
